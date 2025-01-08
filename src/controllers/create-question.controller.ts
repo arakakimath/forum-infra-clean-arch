@@ -20,7 +20,7 @@ type CreateQuestionBodySchema = z.infer<typeof createQuestionBodySchema>
 // @UseGuards(AuthGuard('jwt'))
 @UseGuards(JwtAuthGuard)
 export class CreateQuestionController {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   @Post()
   async handle(
