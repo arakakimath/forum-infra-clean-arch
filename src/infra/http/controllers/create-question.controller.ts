@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Post,
-  UseGuards,
-} from '@nestjs/common'
-import { JwtAuthGuard } from '@/infra/auth/jwt-auth.guard'
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common'
 // import { AuthGuard } from '@nestjs/passport'
 import { CurrentUser } from '@/infra/auth/current-user.decorator'
 import { UserPayload } from '@/infra/auth/jwt.strategy'
@@ -24,7 +17,7 @@ type CreateQuestionBodySchema = z.infer<typeof createQuestionBodySchema>
 
 @Controller('/questions')
 // @UseGuards(AuthGuard('jwt'))
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 export class CreateQuestionController {
   constructor(private createQuestion: CreateQuestionUseCase) {}
 
