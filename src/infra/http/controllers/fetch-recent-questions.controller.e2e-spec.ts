@@ -8,10 +8,12 @@ describe('Fetch recent questions (E2E)', () => {
   let app: INestApplication
   let prisma: PrismaService
   let jwt: JwtService
+
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile()
+
     app = moduleRef.createNestApplication()
     prisma = moduleRef.get(PrismaService)
     jwt = moduleRef.get(JwtService)
