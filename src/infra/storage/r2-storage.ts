@@ -4,6 +4,7 @@ import {
 } from '@/domain/forum/application/storage/uploader'
 
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+
 import { EnvService } from '../env/env.service'
 import { randomUUID } from 'node:crypto'
 import { Injectable } from '@nestjs/common'
@@ -22,7 +23,10 @@ export class R2Storage implements Uploader {
         accessKeyId: envService.get('AWS_ACCESS_KEY_ID'),
         secretAccessKey: envService.get('AWS_SECRET_ACCESS_KEY'),
       },
+      // logger: console,
     })
+
+    this.client.middlewareStack.remove('flexibleChecksums')
   }
 
   async upload({
