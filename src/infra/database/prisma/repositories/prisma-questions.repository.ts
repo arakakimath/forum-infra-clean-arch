@@ -35,7 +35,7 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
   }
 
   async findDetailsBySlug(slug: string): Promise<QuestionDetails | null> {
-    const cacheHit = await this.cacheRepository.get(`questions:${slug}:details`)
+    const cacheHit = await this.cacheRepository.get(`question:${slug}:details`)
 
     if (cacheHit) {
       const cachedData = JSON.parse(cacheHit)
@@ -56,7 +56,7 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
     const questionDetails = PrismaQuestionDetailsMapper.toDomain(question)
 
     await this.cacheRepository.set(
-      `questions: ${slug}: details`,
+      `question:${slug}:details`,
       JSON.stringify(questionDetails),
     )
 
@@ -106,7 +106,7 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
       this.questionAttachmentsRepository.deleteMany(
         question.attachments.getRemovedItems(),
       ),
-      this.cacheRepository.delete(`questions:${data.slug}:details`),
+      this.cacheRepository.delete(`question:${data.slug}:details`),
     ])
 
     DomainEvents.dispatchEventsForAggregate(question.id)
