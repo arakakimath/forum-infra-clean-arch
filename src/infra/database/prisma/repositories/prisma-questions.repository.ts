@@ -16,7 +16,7 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
     private prisma: PrismaService,
     private cacheRepository: CacheRepository,
     private questionAttachmentsRepository: QuestionAttachmentsRepository,
-  ) { }
+  ) {}
 
   async findById(id: string): Promise<Question | null> {
     const question = await this.prisma.question.findUnique({ where: { id } })
