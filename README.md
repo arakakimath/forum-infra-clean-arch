@@ -1,30 +1,71 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Q&A Forum
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project is a continuation from the [domain part of the forum project](https://github.com/arakakimath/forum-domain-clean-arch). This project started with the base structure from [NestJS](https://docs.nestjs.com/). 
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+In this project, the main initial objective was to implement all infrastructure layers, from Gateways, Controllers and Presenters (Interface Adapters), to communicate with DBs, Devices, Front-End, UI and External Interfaces (Frameworks & Drivers). Then, the domain part was added and integration was done to have all the project working as one from the most external layers to the most internal ones.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Table of contents
+
+1. [Project details](#project-details)
+2. [Project setup](#project-setup)
+3. [Compile and run the project](#compile-and-run-the-project)
+4. [Run tests](#run-tests)
+5. [Deployment](#deployment)
+6. [Resources](#resources)
+7. [Support](#support)
+8. [Stay in touch](#stay-in-touch)
+9. [License](#license)
+
+---
+
+## Project details
+
+At first, an initial template from NestJS was used to start developing the forum. As NestJS uses modules, several modules were created to make them more uniques giving organization to the app.
+
+### Validation
+
+Zod package was used to validate schemas of the request body (through Nest pipes) and to validate environmental variables.
+
+### Normalization
+
+ESLint package was used to create a pattern for maintaining the code clean and well-written.
+
+### Authentication
+
+Once controllers were starting to rise up in the application, it became necessary to think about related strategies. The chosen one was using algorithm RS256, in which the system has one private key and at least one public key. The private key is only acessible in the main domain for security reasons and the public key is generated from that. That one's objectives are to create a token to authenticate users and to create public keys, while public key's objective is just validate tokens. 
+
+A controller was used to authenticate users and return a token. By default, all controller routes needs authentication.
+
+### Controllers
+
+The controllers are responsible to intermediate requests and responses between external applications, as DBs or Web, with more internal applications in the domain part, as use cases. 
+
+At first, controllers were built with an internal algorithm that simulated what an internal layer on the domain part would do, once the beginning of the project was focused on the infrastructure part (external layers on the Clean Architecture). Then, it was integrated with domain part to actually communicate external and internal layers of the project.
+
+### Repositories
+
+At the domain part, it was established interfaces (that later became abstract classes, once Nest converts TypeScript to JavaScript for deployment) that contained the methods (and responses) each repository had to have. Still in domain, it was implemented in-memory repositories to execute use cases' unit tests. At infra, repositories were implemented with prisma to intermediate communication between database and use cases.
+
+### Mappers
+
+As entities and tables on database do not necessarily walk together, problems start to arise when trying to integrate these parts. It is not as easy as it seems to be to save a domain entity in database, as their properties do not directly match, and vice-versa. Then, it is necessary to have mappers, which their main function is to convert one kind of data to another. 
+
+### Gateways
+
+Besides repositories, there were established three interfaces of gateways at domain: one to generate token from the private key and a payload, one to hash user's password and other to compare the user's password with the hashed one at database. In domain, these gateways were fake implemented just to simulate their real functions and to execute unit tests. At infra, BCryptJS was used to the methods of hash and compare, and JwtService, from Nest, was used to generate tokens.
+
+### Presenters
+
+One of the challenges of providing data as a response to HTTP requests is dealing with overfetching and underfetching, which refer to sending more or less data than necessary, respectively. When an HTTP request is made and the requester expects valid data, this data is not necessarily stored in a single table or entity, nor does it always include all the data stored in an entity, for example.
+
+To handle this, presenters were implemented in the infrastructure layer to determine which data is truly necessary for the requester. Presenters optimize the application's performance by ensuring that the requester receives only the required data with a minimal number of HTTP requests while reducing unnecessary data transfer. 
+
+
+
+
+---
 
 ## Project setup
 
@@ -43,6 +84,12 @@ $ npm run start:dev
 
 # production mode
 $ npm run start:prod
+
+# start docker
+$ npm run start:docker
+
+# execute migrations on db
+$ npx prisma migrate deploy
 ```
 
 ## Run tests
