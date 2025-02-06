@@ -1,8 +1,12 @@
 # Q&A Forum
 
+This is a project of a question and answers forum, in which is possible to ask or answer a question and comment questions or answers. Also, it is possible to have attachments on questions and answers.
+
 This project is a continuation from the [domain part of the forum project](https://github.com/arakakimath/forum-domain-clean-arch). This project started with the base structure from [NestJS](https://docs.nestjs.com/). 
 
 In this project, the main initial objective was to implement all infrastructure layers, from Gateways, Controllers and Presenters (Interface Adapters), to communicate with DBs, Devices, Front-End, UI and External Interfaces (Frameworks & Drivers). Then, the domain part was added and integration was done to have all the project working as one from the most external layers to the most internal ones.
+
+To built this project, it was used concepts like DDD, SOLID, Clean Architecture, Design patterns (Factory and Repository), etc. Vitest was used for dealing with tests.
 
 ---
 
@@ -22,11 +26,11 @@ In this project, the main initial objective was to implement all infrastructure 
 
 ## Project details
 
-At first, an initial template from NestJS was used to start developing the forum. As NestJS uses modules, several modules were created to make them more uniques giving organization to the app.
+The project was initialized using a NestJS template. Since NestJS follows a modular structure, multiple modules were created to improve organization and maintainability.
 
 ### Validation
 
-Zod package was used to validate schemas of the request body (through Nest pipes) and to validate environmental variables.
+The Zod package was used for schema validation, ensuring request bodies (via NestJS pipes) and environment variables are correctly formatted.
 
 ### Normalization
 
@@ -34,23 +38,23 @@ ESLint package was used to create a pattern for maintaining the code clean and w
 
 ### Authentication
 
-Once controllers were starting to rise up in the application, it became necessary to think about related strategies. The chosen one was using algorithm RS256, in which the system has one private key and at least one public key. The private key is only acessible in the main domain for security reasons and the public key is generated from that. That one's objectives are to create a token to authenticate users and to create public keys, while public key's objective is just validate tokens. 
+Once dealing with controllers, it became necessary to think about authentication strategies. TThe chosen approach was RS256, a public-private key algorithm where the system maintains one private key and at least one public key. The private key is only acessible in the main domain for security reasons and the public key is generated from that. That one's objectives are to create a token to authenticate users and to create public keys, while public key's objective is just validate tokens. 
 
 A controller was used to authenticate users and return a token. By default, all controller routes needs authentication.
 
 ### Controllers
 
-The controllers are responsible to intermediate requests and responses between external applications, as DBs or Web, with more internal applications in the domain part, as use cases. 
+Controllers act as intermediaries between external applications (e.g., databases, web services) and internal business logic (e.g., use cases). 
 
 At first, controllers were built with an internal algorithm that simulated what an internal layer on the domain part would do, once the beginning of the project was focused on the infrastructure part (external layers on the Clean Architecture). Then, it was integrated with domain part to actually communicate external and internal layers of the project.
 
 ### Repositories
 
-At the domain part, it was established interfaces (that later became abstract classes, once Nest converts TypeScript to JavaScript for deployment) that contained the methods (and responses) each repository had to have. Still in domain, it was implemented in-memory repositories to execute use cases' unit tests. At infra, repositories were implemented with prisma to intermediate communication between database and use cases.
+In the domain layer, interfaces were defined to enforce repository structure. These later became abstract classes since NestJS compiles TypeScript to JavaScript.
 
 ### Mappers
 
-As entities and tables on database do not necessarily walk together, problems start to arise when trying to integrate these parts. It is not as easy as it seems to be to save a domain entity in database, as their properties do not directly match, and vice-versa. Then, it is necessary to have mappers, which their main function is to convert one kind of data to another. 
+As entities and tables on database do not necessarily walk together, problems start to arise when trying to integrate these parts. Saving a domain entity to the database isn’t straightforward, as entity properties often don’t directly match table structures. Then, it is necessary to have mappers, which their main function is to convert one kind of data to another. 
 
 ### Gateways
 
@@ -58,12 +62,45 @@ Besides repositories, there were established three interfaces of gateways at dom
 
 ### Presenters
 
-One of the challenges of providing data as a response to HTTP requests is dealing with overfetching and underfetching, which refer to sending more or less data than necessary, respectively. When an HTTP request is made and the requester expects valid data, this data is not necessarily stored in a single table or entity, nor does it always include all the data stored in an entity, for example.
+One of the challenges of providing data as a response to HTTP requests is balancing overfetching and underfetching—sending too much or too little data, respectively. When an HTTP request is made and the requester expects valid data, this data is not necessarily stored in a single table or entity, nor does it always include all the data stored in an entity, for example.
 
-To handle this, presenters were implemented in the infrastructure layer to determine which data is truly necessary for the requester. Presenters optimize the application's performance by ensuring that the requester receives only the required data with a minimal number of HTTP requests while reducing unnecessary data transfer. 
+To optimize performance, presenters were implemented in the infrastructure layer. They ensure that requesters receive only the necessary data while minimizing HTTP requests and reducing unnecessary data transfer.
 
+### Database
 
+The database layer was designed to ensure scalability, reliability, and performance. PostgreSQL was chosen as the primary database due to its robustness, support for complex queries, and compatibility with relational data structures. Docker was used to containerize both the PostgreSQL database and Redis cache, ensuring consistency across development, testing, and production environments.
 
+#### PostgreSQL with Docker
+
+- Containerization: PostgreSQL was set up using Docker to simplify deployment and maintain consistency across environments. A docker-compose file was created to define the database service, including environment variables for configuration (e.g., username, password, database name).
+
+- Migrations: Database schema changes were managed using Prisma migration tools to ensure version control and seamless updates across environments.
+
+- Integration with NestJS: The application connected to the PostgreSQL database using Prisma, allowing seamless interaction between the application and the database.
+
+#### Redis for caching with Docker
+
+To optimize performance and reduce database load, Redis was implemented as a caching layer using Docker. Redis was chosen for its speed, simplicity, and support for advanced caching strategies.
+
+- Containerization: Redis was containerized using Docker, ensuring a consistent and isolated environment for caching.
+
+- Cache Repository: Redis was used to store frequently accessed data, such as user sessions or API responses, reducing the need for repeated database queries.
+
+- Cache Invalidation: A cache invalidation strategy was implemented to ensure data consistency, removing outdated or irrelevant data from the cache when necessary.
+
+#### Cloudflare R2 for attachment storage
+
+For storing attachments, Cloudflare R2 was integrated into the application. R2 was chosen for its cost-effectiveness, scalability, and compatibility with modern cloud storage needs.
+
+- File Storage: Cloudflare R2 was used to store and retrieve attachments, providing a reliable and scalable solution for handling large files.
+
+- Integration: The application communicated with R2 via its API, enabling seamless upload, download, and management of attachments.
+
+- Security: Access controls and encryption were implemented to ensure the security and privacy of stored files.
+
+### Tests
+
+Vitest was used for handling with unit tests for use cases and e2e tests for controllers.
 
 ---
 
