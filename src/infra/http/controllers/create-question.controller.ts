@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common'
-// import { AuthGuard } from '@nestjs/passport'
+import { ApiTags, ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger'
 import { CurrentUser } from '@/infra/auth/current-user.decorator'
 import { UserPayload } from '@/infra/auth/jwt.strategy'
 import { z } from 'zod'
@@ -17,12 +17,41 @@ const bodyValidationPipe = new ZodValidationPipe(createQuestionBodySchema)
 type CreateQuestionBodySchema = z.infer<typeof createQuestionBodySchema>
 
 @Controller('/questions')
-// @UseGuards(AuthGuard('jwt'))
-// @UseGuards(JwtAuthGuard)
+@ApiTags('Questions') // Categorizing under 'Questions' tag in Swagger UI
 export class CreateQuestionController {
   constructor(private createQuestion: CreateQuestionUseCase) {}
 
   @Post()
+  @ApiOperation({
+    summary: 'Create a new question', // Operation summary
+    description:
+      'This endpoint allows an authenticated user to create a new question.',
+  })
+  @ApiBody({
+    description: 'Request body to create a new question',
+    type: Object,
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        content: { type: 'string' },
+        attachments: {
+          type: 'array',
+          items: { type: 'string', format: 'uuid' },
+          default: [],
+        },
+      },
+      required: ['title', 'content'],
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Question created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request: Invalid input data',
+  })
   async handle(
     @Body(bodyValidationPipe) body: CreateQuestionBodySchema,
     @CurrentUser() user: UserPayload,

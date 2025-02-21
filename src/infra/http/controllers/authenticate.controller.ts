@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
   UsePipes,
 } from '@nestjs/common'
+import { ApiTags, ApiBody, ApiResponse, ApiOperation } from '@nestjs/swagger' // Importing Swagger decorators
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 import { z } from 'zod'
 import { AuthenticateStudentUseCase } from '@/domain/forum/application/use-cases/authenticate-student'
@@ -21,10 +22,64 @@ type AuthenticateBodySchema = z.infer<typeof authenticateBodySchema>
 
 @Controller('/sessions')
 @Public()
+@ApiTags('Users') // Adding the tag for grouping the endpoints related to 'Authentication'
 export class AuthenticateController {
   constructor(private authenticateStudent: AuthenticateStudentUseCase) {}
 
   @Post()
+  @ApiOperation({ summary: 'Authenticate a student and obtain access token' }) // Operation summary
+  @ApiBody({
+    type: Object,
+    description: 'Student credentials for authentication.',
+    schema: {
+      type: 'object',
+      properties: {
+        email: {
+          type: 'string',
+          format: 'email',
+          description: 'Student email address',
+        },
+        password: {
+          type: 'string',
+          description: 'Student password',
+        },
+      },
+    },
+    examples: {
+      loginExample: {
+        summary: 'Example of login',
+        description: 'This is an example of login',
+        value: {
+          email: 'johndoe@example.com',
+          password: 'password123',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Authentication successful, returns access token',
+    schema: {
+      type: 'object',
+      properties: {
+        access_token: {
+          type: 'string',
+          description: 'JWT access token for the student',
+        },
+      },
+    },
+    example: {
+      accessToken: 'someToken',
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid data or inputs',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid credentials',
+  })
   @UsePipes(new ZodValidationPipe(authenticateBodySchema))
   async handle(@Body() body: AuthenticateBodySchema) {
     const { email, password } = body

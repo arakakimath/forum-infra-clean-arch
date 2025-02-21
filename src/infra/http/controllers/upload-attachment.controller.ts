@@ -11,8 +11,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 @Controller('/attachments')
+@ApiTags('Attachments') // Categorizing under 'Questions' tag in Swagger UI
 export class UploadAttachmentController {
   constructor(
     private uploadAndCreateAttachment: UploadAndCreateAttachmentUseCase,
@@ -20,6 +22,28 @@ export class UploadAttachmentController {
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: 'Upload and create an attachment',
+    description:
+      'Uploads an attachment (image or PDF) and creates it in the system.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Attachment successfully uploaded and created',
+    schema: {
+      type: 'object',
+      properties: {
+        attachmentId: {
+          type: 'string',
+          description: 'ID of the uploaded attachment',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request: Invalid file type or file size',
+  })
   async handle(
     @UploadedFile(
       new ParseFilePipe({
