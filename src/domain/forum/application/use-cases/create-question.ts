@@ -22,7 +22,7 @@ type CreateQuestionUseCaseResponse = Either<
 
 @Injectable()
 export class CreateQuestionUseCase {
-  constructor(private questionsRepository: QuestionsRepository) {}
+  constructor(private questionsRepository: QuestionsRepository) { }
 
   async execute({
     authorId,
@@ -35,6 +35,23 @@ export class CreateQuestionUseCase {
       title,
       content,
     })
+
+    const questionWithSameSlug = await this.questionsRepository.findBySlug(
+      question.slug.value,
+    )
+
+    if (questionWithSameSlug) {
+      let count = 1
+      while (
+        await this.questionsRepository.findBySlug(
+          question.slug.value + '-' + count.toString(),
+        )
+      ) {
+        count++
+      }
+
+      question.slug.value = question.slug.value + '-' + count.toString()
+    }
 
     const questionAttachments = attachmentsIds.map((attachmentId) => {
       return QuestionAttachment.create({
