@@ -19,3 +19,16 @@ services:
       - 6379:6379
     volumes:
       - ./data/redis:/data
+
+  q-n-a-forum-api:
+    container_name: q-n-a-forum-api
+    build:
+      context: .
+    ports:
+      - 3333:3333
+    depends_on:
+      - postgres
+      - cache
+    environment:
+      - DATABASE_URL=postgresql://postgres:docker@nest-clean-pg:5432/nest-clean?schema=public
+      - REDIS_HOST=nest-clean-cache

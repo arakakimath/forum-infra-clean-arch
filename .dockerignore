@@ -1,0 +1,23 @@
+# Folders
+node_modules
+dist
+data
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Git
+.git
+.gitignore
+
+# REST Client
+client.http
+
+# ESLint
+.eslintignore
+.eslintrc.json
+
+# ENV
+.env.example
+.env.test
