@@ -1,183 +1,363 @@
-# Q&A Forum
+# 📦 Q&A Forum API  
 
-This is a project of a question and answers forum, in which is possible to ask or answer a question and comment questions or answers. Also, it is possible to have attachments on questions and answers.
+> A RESTful API for forum managing, allowing users to create, update, delete and comment on questions or theirs answers.
 
-This project is a continuation from the [domain part of the forum project](https://github.com/arakakimath/forum-domain-clean-arch). This project started with the base structure from [NestJS](https://docs.nestjs.com/). 
+## 📌 Table of Contents  
+- [📖 About](#about)  
+- [🚀 Technologies](#technologies)  
+- [⚙️ Requirements](#requirements)  
+- [📦 Installation](#installation)  
+- [⚙️ Configuration](#configuration)  
+- [▶️ Running the Project](#running-the-project)  
+- [📌 API Routes](#api-routes)  
+- [✅ Tests](#tests)  
+- [🤝 Contribution](#contribution)  
+- [📝 License](#license)  
+- [📩 Contact](#contact)  
 
-In this project, the main initial objective was to implement all infrastructure layers, from Gateways, Controllers and Presenters (Interface Adapters), to communicate with DBs, Devices, Front-End, UI and External Interfaces (Frameworks & Drivers). Then, the domain part was added and integration was done to have all the project working as one from the most external layers to the most internal ones.
+---  
 
-To built this project, it was used concepts like DDD, SOLID, Clean Architecture, Design patterns (Factory and Repository), etc. Vitest was used for dealing with tests.
+## 📖 About <a id="about"></a>  
+**Q&A Forum API** is a backend service that powers a **question-and-answer platform**, allowing users to post questions, provide answers, and engage through comments. The API ensures **structured discussions** with support for file attachments and authentication.  
 
----
+Built with a **scalable and modular architecture**, it follows **SOLID principles, Clean Architecture, and Domain-Driven Design (DDD)** to maintain separation of concerns and extensibility.  
 
-## Table of contents
-
-1. [Project details](#project-details)
-2. [Project setup](#project-setup)
-3. [Compile and run the project](#compile-and-run-the-project)
-4. [Run tests](#run-tests)
-5. [Deployment](#deployment)
-6. [Resources](#resources)
-7. [Support](#support)
-8. [Stay in touch](#stay-in-touch)
-9. [License](#license)
-
----
-
-## Project details
-
-The project was initialized using a NestJS template. Since NestJS follows a modular structure, multiple modules were created to improve organization and maintainability.
-
-### Validation
-
-The Zod package was used for schema validation, ensuring request bodies (via NestJS pipes) and environment variables are correctly formatted.
-
-### Normalization
-
-ESLint package was used to create a pattern for maintaining the code clean and well-written.
-
-### Authentication
-
-Once dealing with controllers, it became necessary to think about authentication strategies. TThe chosen approach was RS256, a public-private key algorithm where the system maintains one private key and at least one public key. The private key is only acessible in the main domain for security reasons and the public key is generated from that. That one's objectives are to create a token to authenticate users and to create public keys, while public key's objective is just validate tokens. 
-
-A controller was used to authenticate users and return a token. By default, all controller routes needs authentication.
-
-### Controllers
-
-Controllers act as intermediaries between external applications (e.g., databases, web services) and internal business logic (e.g., use cases). 
-
-At first, controllers were built with an internal algorithm that simulated what an internal layer on the domain part would do, once the beginning of the project was focused on the infrastructure part (external layers on the Clean Architecture). Then, it was integrated with domain part to actually communicate external and internal layers of the project.
-
-### Repositories
-
-In the domain layer, interfaces were defined to enforce repository structure. These later became abstract classes since NestJS compiles TypeScript to JavaScript.
-
-### Mappers
-
-As entities and tables on database do not necessarily walk together, problems start to arise when trying to integrate these parts. Saving a domain entity to the database isn’t straightforward, as entity properties often don’t directly match table structures. Then, it is necessary to have mappers, which their main function is to convert one kind of data to another. 
-
-### Gateways
-
-Besides repositories, there were established three interfaces of gateways at domain: one to generate token from the private key and a payload, one to hash user's password and other to compare the user's password with the hashed one at database. In domain, these gateways were fake implemented just to simulate their real functions and to execute unit tests. At infra, BCryptJS was used to the methods of hash and compare, and JwtService, from Nest, was used to generate tokens.
-
-### Presenters
-
-One of the challenges of providing data as a response to HTTP requests is balancing overfetching and underfetching—sending too much or too little data, respectively. When an HTTP request is made and the requester expects valid data, this data is not necessarily stored in a single table or entity, nor does it always include all the data stored in an entity, for example.
-
-To optimize performance, presenters were implemented in the infrastructure layer. They ensure that requesters receive only the necessary data while minimizing HTTP requests and reducing unnecessary data transfer.
-
-### Database
-
-The database layer was designed to ensure scalability, reliability, and performance. PostgreSQL was chosen as the primary database due to its robustness, support for complex queries, and compatibility with relational data structures. Docker was used to containerize both the PostgreSQL database and Redis cache, ensuring consistency across development, testing, and production environments.
-
-#### PostgreSQL with Docker
-
-- Containerization: PostgreSQL was set up using Docker to simplify deployment and maintain consistency across environments. A docker-compose file was created to define the database service, including environment variables for configuration (e.g., username, password, database name).
-
-- Migrations: Database schema changes were managed using Prisma migration tools to ensure version control and seamless updates across environments.
-
-- Integration with NestJS: The application connected to the PostgreSQL database using Prisma, allowing seamless interaction between the application and the database.
-
-#### Redis for caching with Docker
-
-To optimize performance and reduce database load, Redis was implemented as a caching layer using Docker. Redis was chosen for its speed, simplicity, and support for advanced caching strategies.
-
-- Containerization: Redis was containerized using Docker, ensuring a consistent and isolated environment for caching.
-
-- Cache Repository: Redis was used to store frequently accessed data, such as user sessions or API responses, reducing the need for repeated database queries.
-
-- Cache Invalidation: A cache invalidation strategy was implemented to ensure data consistency, removing outdated or irrelevant data from the cache when necessary.
-
-#### Cloudflare R2 for attachment storage
-
-For storing attachments, Cloudflare R2 was integrated into the application. R2 was chosen for its cost-effectiveness, scalability, and compatibility with modern cloud storage needs.
-
-- File Storage: Cloudflare R2 was used to store and retrieve attachments, providing a reliable and scalable solution for handling large files.
-
-- Integration: The application communicated with R2 via its API, enabling seamless upload, download, and management of attachments.
-
-- Security: Access controls and encryption were implemented to ensure the security and privacy of stored files.
-
-### Tests
-
-Vitest was used for handling with unit tests for use cases and e2e tests for controllers.
+Key Features:  
+- **User Authentication:** Secure sign-up, login, and session management using JWT (RS256 algorithm).  
+- **Question Management:** Users can create, edit, and delete questions.  
+- **Answer & Comment System:** Structured responses with discussion threading.  
+- **File Attachments:** Support for image and document uploads.  
+- **Scalable Architecture:** Repository pattern, use cases, and separation of domain and infrastructure layers.  
 
 ---
 
-## Project setup
+## 🚀 Technologies <a id="technologies"></a>  
+The **Q&A Forum API** is built with a **scalable and maintainable stack**, following **Clean Architecture and Domain-Driven Design (DDD)** principles:  
+
+- **🟢 NestJS (Express)** – Modular and structured Node.js framework.  
+- **📌 TypeScript** – Statically typed JavaScript for better maintainability.  
+- **🐘 PostgreSQL + Prisma ORM** – SQL database with a type-safe ORM for data persistence.  
+- **🗄️ Redis** – In-memory database for caching and performance optimization.  
+- **🐳 Docker** – Containerized infrastructure for consistent deployment.  
+- **📦 Clean Architecture** – Separation of concerns for a scalable and modular codebase.  
+- **🔐 JWT Authentication (RS256)** – Secure user authentication with private/public key encryption.  
+- **🛡️ Zod** – Schema-based validation for environment variables, request body, query, and params.  
+- **🧪 Vitest + Supertest** – Unit and integration testing for API reliability.  
+- **📁 Cloudflare R2 (or S3)** – Cloud-based storage for file attachments.  
+- **📝 ESLint** – Code formatting and linting for maintaining code consistency.
+- **🔑 bcryptjs** – Password hashing and comparison for authentication. 
+
+---  
+
+## ⚙️ Requirements <a id="requirements"></a>  
+To run this project, you need:  
+- 🐳 **[Docker](https://www.docker.com/)** – Runs the entire application (PostgreSQL, Redis, and the built image).  
+- 🪣 **Cloudflare R2 or Amazon S3** – Object storage for handling file uploads.
+
+---  
+
+## 📦 Installation <a id="installation"></a>  
+Clone the repository:  
 
 ```bash
-$ npm install
+git clone https://github.com/arakakimath/forum-infra-clean-arch
 ```
 
-## Compile and run the project
+Then, create a bucket with **Amazon Web Services (AWS) S3** or **Cloudflare R2**. **Skipping this step will break attachment-related controllers, but other app functions should work properly.**
+
+Additionally, you need to generate private and public keys following the RS256 algorithm for JWT authentication. These keys should then be added to the `.env` file:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-
-# start docker
-$ npm run start:docker
-
-# execute migrations on db
-$ npx prisma migrate deploy
+JWT_PRIVATE_KEY="your_private_key"
+JWT_PUBLIC_KEY="your_public_key"
 ```
 
-## Run tests
+---  
+
+## ⚙️ Configuration <a id="configuration"></a>  
+Create a `.env` file based on the example:  
 
 ```bash
-# unit tests
-$ npm run test
+cp .env.example .env
+```  
 
-# e2e tests
-$ npm run test:e2e
+Edit `.env` with the correct database credentials:  
 
-# test coverage
-$ npm run test:cov
 ```
+- PostgreSQL:
+DATABASE_URL="postgresql://postgres:docker@localhost:5432/nest-clean?schema=public" 
+# If running with docker: Set in docker-compose
 
-## Deployment
+- RS256 algorithm:
+JWT_PRIVATE_KEY="your_private_key"
+JWT_PUBLIC_KEY="your_public_key"
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- Cloudflare R2 or AWS S3:
+CLOUDFLARE_ACCOUNT_ID="cf_acc_id"
+AWS_BUCKET_NAME="bucket_name"
+AWS_ACCESS_KEY_ID="aws_access_key_id"
+AWS_SECRET_ACCESS_KEY="aws_secret_access_key"
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- Redis:
+REDIS_HOST="127.0.0.1" # Optional. If running with docker: Set in docker-compose according to service name
+REDIS_PORT="6379" # Optional
+REDIS_DB="0" # Optional
+```  
+
+---  
+
+## ▶️ Running the Project <a id="running-the-project"></a>  
+Run the project with Docker Compose:  
 
 ```bash
-$ npm install -g mau
-$ mau deploy
-```
+docker-compose up -d
+```  
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Then, after Docker Compose finishes setting up containers, application will listen to http://localhost:3333
 
-## Resources
+---  
 
-Check out a few resources that may come in handy when working with NestJS:
+## 📌 API Routes <a id="api-routes"></a>  
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### 🔐 Authentication  
+#### `POST /sessions`  
+- **Description:** Authenticate a user and return an access token.  
+- **Body:**  
+  ```json
+  {
+    "email": "johndoe@example.com",
+    "password": "password123"
+  }
+  ```  
+- **Response:**  
+  ```json
+  {
+    "access_token": "someToken"
+  }
+  ```  
 
-## Support
+### 👤 User Management  
+#### `POST /accounts`  
+- **Description:** Create a new user account.  
+- **Body:**  
+  ```json
+  {
+    "name": "John Doe",
+    "email": "johndoe@example.com",
+    "password": "password123"
+  }
+  ```  
+- **Response:**  
+  - **201:** Account created successfully.  
+  - **400:** Bad request - Invalid input data.  
+  - **409:** Conflict - User already exists.  
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### ❓ Questions  
+#### `POST /questions`  
+- **Description:** Create a new question.  
+- **Response:**  
+  - **201:** Question created successfully.  
+  - **400:** Bad request - Invalid input data.  
 
-## Stay in touch
+#### `GET /questions`  
+- **Description:** Fetch recent questions with pagination.  
+- **Parameters:**  
+  - `page` (optional): Page number for pagination.  
+- **Response:**  
+  - **200:** Successfully fetched questions.
+  - **400:** Bad request - Invalid input data.  
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+#### `GET /questions/{slug}`  
+- **Description:** Get a question by its slug.  
+- **Parameters:**  
+  - `slug` (required): The slug of the question.  
+- **Response:** 
+  - **200:** Successfully get question details.
+  - **400:** Bad request - Invalid slug or data.  
 
-## License
+#### `PUT /questions/{id}`  
+- **Description:** Edit an existing question.  
+- **Parameters:**  
+  - `id` (required): The ID of the question to edit.  
+- **Body:**  
+  ```json
+  {
+    "title": "Updated title",
+    "content": "Updated content",
+    "attachments": []
+  }
+  ```  
+- **Response:**  
+  - **204:** Question edited successfully.  
+  - **400:** Bad request - Invalid input data.  
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+#### `DELETE /questions/{id}`  
+- **Description:** Delete a question by its ID.  
+- **Parameters:**  
+  - `id` (required): The ID of the question to delete.  
+- **Response:**  
+  - **204:** Question deleted successfully.  
+  - **400:** Bad request - Invalid input data or operation.  
+
+### 💬 Answers  
+#### `POST /questions/{questionId}/answers`  
+- **Description:** Answer a specific question.  
+- **Parameters:**  
+  - `questionId` (required): The ID of the question to answer.  
+- **Body:**  
+  ```json
+  {
+    "content": "This is how you use the API.",
+    "attachments": []
+  }
+  ```  
+- **Response:**  
+  - **201:** Answer successfully created.  
+  - **400:** Bad request - Invalid data or inputs.  
+
+#### `GET /questions/{questionId}/answers`  
+- **Description:** Fetch answers for a specific question with pagination.  
+- **Parameters:**  
+  - `questionId` (required): The ID of the question.  
+  - `page` (optional): Page number for pagination.  
+- **Response:**  
+  - **200:** Successfully fetched the answers.
+  - **400:** Bad request - Invalid input data.  
+
+#### `PUT /answers/{id}`  
+- **Description:** Edit an existing answer.  
+- **Parameters:**  
+  - `id` (required): The ID of the answer to edit.  
+- **Body:**  
+  ```json
+  {
+    "content": "Updated answer content.",
+    "attachments": []
+  }
+  ```  
+- **Response:**  
+  - **204:** Answer edited successfully.  
+  - **400:** Bad request - Invalid input data.  
+
+#### `DELETE /answers/{id}`  
+- **Description:** Delete an answer by its ID.  
+- **Parameters:**  
+  - `id` (required): The ID of the answer to delete.  
+- **Response:**  
+  - **204:** Answer deleted successfully.  
+  - **400:** Bad request - Invalid input or the answer does not exist.  
+
+#### `PATCH /answers/{answerId}/choose-as-best`  
+- **Description:** Choose a best answer for a question.  
+- **Parameters:**  
+  - `answerId` (required): The ID of the answer to mark as best.  
+- **Response:**  
+  - **204:** The answer has been successfully chosen as the best answer.  
+  - **400:** Bad request - The action could not be performed.  
+
+### 💬 Comments  
+#### `POST /questions/{questionId}/comments`  
+- **Description:** Post a comment on a question.  
+- **Parameters:**  
+  - `questionId` (required): The ID of the question to comment on.  
+- **Response:**  
+  - **201:** The comment has been successfully created.  
+  - **400:** Bad request - The action could not be performed.  
+
+#### `GET /questions/{questionId}/comments`  
+- **Description:** Fetch comments for a specific question with pagination.  
+- **Parameters:**  
+  - `questionId` (required): The ID of the question.  
+  - `page` (optional): Page number for pagination.  
+- **Response:**  
+  - **200:** Successfully fetched the question comments.  
+  - **400:** Bad request - Invalid input data.  
+
+#### `DELETE /questions/comments/{id}`  
+- **Description:** Delete a comment on a question by its ID.  
+- **Parameters:**  
+  - `id` (required): The ID of the comment to delete.  
+- **Response:**  
+  - **204:** Comment deleted successfully.  
+  - **400:** Bad request - Invalid input data or operation.  
+
+#### `POST /answers/{answerId}/comments`  
+- **Description:** Post a comment on an answer.  
+- **Parameters:**  
+  - `answerId` (required): The ID of the answer to comment on.  
+- **Response:**  
+  - **201:** The comment has been successfully created.  
+  - **400:** Bad request - The action could not be performed.  
+
+#### `GET /answers/{answerId}/comments`  
+- **Description:** Fetch comments for a specific answer with pagination.  
+- **Parameters:**  
+  - `answerId` (required): The ID of the answer.  
+  - `page` (optional): Page number for pagination.  
+- **Response:**  
+  - **200:** Successfully fetched the answer comments. 
+  - **400:** Bad request - Invalid input data.  
+
+#### `DELETE /answers/comments/{id}`  
+- **Description:** Delete a comment on an answer by its ID.  
+- **Parameters:**  
+  - `id` (required): The ID of the comment to delete.  
+- **Response:**  
+  - **204:** Comment deleted successfully.  
+  - **400:** Bad request - Invalid input or the comment does not exist.  
+
+### 📎 Attachments  
+#### `POST /attachments`  
+- **Description:** Upload and create an attachment (image or PDF).  
+- **Response:**  
+  - **200:** Successfully got the attachment.
+  - **400:** Bad request - Invalid file type or file size.  
+
+### 🔔 Notifications  
+#### `PATCH /notifications/{notificationId}/read`  
+- **Description:** Mark a notification as read.  
+- **Parameters:**  
+  - `notificationId` (required): The ID of the notification to mark as read.  
+- **Response:**  
+  - **204:** Successfully marked the notification as read.  
+  - **400:** Bad request - Invalid notification ID or data.
+
+---  
+
+## ✅ Tests <a id="tests"></a>  
+Run unit tests with:  
+
+```bash
+npm run test
+```  
+
+Run end-to-end (e2e) tests with:  
+
+```bash
+npm run test:e2e
+```  
+
+---  
+
+## 🤝 Contribution <a id="contribution"></a>  
+Want to contribute? Follow these steps:  
+
+1. Fork the repository.  
+2. Create a new branch: `git checkout -b feature-branch`.  
+3. Make your changes and commit: `git commit -m "Added new feature"`.  
+4. Push to your fork: `git push origin feature-branch`.  
+5. Open a Pull Request.  
+
+---  
+
+## 📝 License <a id="license"></a>  
+This project is under the **MIT License** – see the [LICENSE](https://opensource.org/license/MIT) file for details.  
+
+---  
+
+## 📩 Contact <a id="contact"></a>  
+For support or inquiries, contact:  
+
+- **Email:** arakakimath@gmail.com  
+- **LinkedIn:** [Matheus Arakaki](https://linkedin.com/in/arakakimath)  
+- **GitHub:** [@arakakimath](https://github.com/arakakimath)  
